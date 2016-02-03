@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import sys
 
 import dj_database_url
 from decouple import Csv, config
@@ -35,9 +36,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 INSTALLED_APPS = [
     # Project specific apps
     'medlem.base',
-
-    # Third party apps
-    'django_jinja',
+    'medlem.api',
 
     # Django apps
     'django.contrib.admin',
@@ -45,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
 ]
 
 for app in config('EXTRA_APPS', default='', cast=Csv()):
@@ -58,9 +56,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'session_csrf.CsrfMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'csp.middleware.CSPMiddleware',
 )
 
 ROOT_URLCONF = 'medlem.urls'
@@ -85,86 +80,44 @@ LANGUAGE_CODE = config('LANGUAGE_CODE', default='en-us')
 
 TIME_ZONE = config('TIME_ZONE', default='UTC')
 
-USE_I18N = config('USE_I18N', default=True, cast=bool)
+USE_I18N = config('USE_I18N', default=False, cast=bool)
 
-USE_L10N = config('USE_L10N', default=True, cast=bool)
+USE_L10N = config('USE_L10N', default=False, cast=bool)
 
 USE_TZ = config('USE_TZ', default=True, cast=bool)
 
-STATIC_ROOT = config('STATIC_ROOT', default=os.path.join(BASE_DIR, 'static'))
-STATIC_URL = config('STATIC_URL', '/static/')
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
-MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
-MEDIA_URL = config('MEDIA_URL', '/media/')
+SESSION_COOKIE_SECURE = config(
+    'SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
 
-SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django_jinja.backend.Jinja2',
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'match_extension': '.jinja',
-            'newstyle_gettext': True,
-            'context_processors': [
-                'session_csrf.context_processor',
-                'medlem.base.context_processors.settings',
-                'medlem.base.context_processors.i18n',
-            ],
-        }
-    },
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.contrib.auth.context_processors.auth',
-                'django.template.context_processors.debug',
-                'django.template.context_processors.i18n',
-                'django.template.context_processors.media',
-                'django.template.context_processors.static',
-                'django.template.context_processors.tz',
-                'django.contrib.messages.context_processors.messages',
-                'session_csrf.context_processor',
-            ],
-        }
-    },
-]
-
-# Django-CSP
-CSP_DEFAULT_SRC = (
-    "'self'",
-)
-CSP_FONT_SRC = (
-    "'self'",
-    'http://*.mozilla.net',
-    'https://*.mozilla.net',
-    'http://*.mozilla.org',
-    'https://*.mozilla.org',
-)
-CSP_IMG_SRC = (
-    "'self'",
-    'http://*.mozilla.net',
-    'https://*.mozilla.net',
-    'http://*.mozilla.org',
-    'https://*.mozilla.org',
-)
-CSP_SCRIPT_SRC = (
-    "'self'",
-    'http://*.mozilla.org',
-    'https://*.mozilla.org',
-    'http://*.mozilla.net',
-    'https://*.mozilla.net',
-)
-CSP_STYLE_SRC = (
-    "'self'",
-    "'unsafe-inline'",
-    'http://*.mozilla.org',
-    'https://*.mozilla.org',
-    'http://*.mozilla.net',
-    'https://*.mozilla.net',
-)
 
 # This is needed to get a CRSF token in /admin
 ANON_ALWAYS = True
+
+# LDAP related settings
+LDAP_SERVER_URI = config('LDAP_SERVER_URI', default='ldap://pm-ns.mozilla.org')
+LDAP_BIND_DN = config('LDAP_BIND_DN', '')
+LDAP_BIND_PASSWORD = config('LDAP_BIND_PASSWORD', '')
+LDAP_SEARCH_BASE = config(
+    'LDAP_SEARCH_BASE', default='dc=mozilla'
+)
+GROUP_LDAP_SEARCH_BASE = config(
+    'GROUP_LDAP_SEARCH_BASE', default='ou=groups,dc=mozilla'
+)
+# XXX might need to be broken up
+_LDAP_GLOBAL_OPTIONS = config('LDAP_GLOBAL_OPTIONS', cast=Csv(), default='')
+LDAP_GLOBAL_OPTIONS = dict(x.split(':', 1) for x in _LDAP_GLOBAL_OPTIONS)
+# For extra LDAP debugging if need be
+# import ldap
+# AUTH_LDAP_GLOBAL_OPTIONS = {
+#  ldap.OPT_DEBUG_LEVEL: 4095
+# }
+
+
+# When running tests, you want to absolute make sure you don't actually
+# fly with real values for certain things:
+if len(sys.argv) > 1 and sys.argv[1] == 'test':
+    # We're in the middle of a django test run
+    LDAP_SERVER_URI = 'ldap://example.com'
+    LDAP_BIND_DN = 'cosmo'
+    LDAP_BIND_PASSWORD = 'kramer'
