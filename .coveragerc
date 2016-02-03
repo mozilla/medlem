@@ -1,0 +1,5 @@
+[run]
+source = medlem
+
+[report]
+omit = */migrations/*
