@@ -20,7 +20,8 @@ urlpatterns = [
     ),
 
     # contribute.json url
-    url(r'^(?P<path>contribute\.json)$',
+    url(
+        r'^(?P<path>contribute\.json)$',
         static.serve,
         {'document_root': settings.ROOT},
     ),

@@ -2,7 +2,6 @@ import json
 
 import mock
 
-from django.conf import settings
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
@@ -113,8 +112,10 @@ class TestAPI(TestCase):
 
         def search_s(base, scope, filterstr, *args, **kwargs):
             if 'ou=groups' in base:
-                if ('peter@example.com' in filterstr and
-                    'cn=CrashStats' in filterstr):
+                if (
+                    'peter@example.com' in filterstr and
+                    'cn=CrashStats' in filterstr
+                ):
                     return result.items()
             else:
                 # basic lookup
