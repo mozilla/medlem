@@ -14,6 +14,16 @@ import sys
 import dj_database_url
 from decouple import Csv, config
 
+# When running tests, you want to absolute make sure you don't actually
+# fly with real values for certain things:
+if len(sys.argv) > 1 and sys.argv[1] == 'test':
+    # We're in the middle of a django test run
+    os.environ['LDAP_SERVER_URI'] = 'ldap://example.com'
+    os.environ['LDAP_BIND_DN'] = 'cosmo'
+    os.environ['LDAP_BIND_PASSWORD'] = 'kramer'
+    os.environ['SECRET_KEY'] = 'XXXX'
+    os.environ['ALLOWED_HOSTS'] = 'localhost'
+    os.environ['DATABASE_URL'] = 'sqlite://:memory:'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -26,7 +36,7 @@ ROOT = os.path.dirname(os.path.join(BASE_DIR, '..'))
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', cast=bool)
+DEBUG = config('DEBUG', cast=bool, default=False)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
@@ -96,8 +106,8 @@ ANON_ALWAYS = True
 
 # LDAP related settings
 LDAP_SERVER_URI = config('LDAP_SERVER_URI', default='ldap://pm-ns.mozilla.org')
-LDAP_BIND_DN = config('LDAP_BIND_DN', '')
-LDAP_BIND_PASSWORD = config('LDAP_BIND_PASSWORD', '')
+LDAP_BIND_DN = config('LDAP_BIND_DN')
+LDAP_BIND_PASSWORD = config('LDAP_BIND_PASSWORD')
 LDAP_SEARCH_BASE = config(
     'LDAP_SEARCH_BASE', default='dc=mozilla'
 )
@@ -112,12 +122,3 @@ LDAP_GLOBAL_OPTIONS = dict(x.split(':', 1) for x in _LDAP_GLOBAL_OPTIONS)
 # AUTH_LDAP_GLOBAL_OPTIONS = {
 #  ldap.OPT_DEBUG_LEVEL: 4095
 # }
-
-
-# When running tests, you want to absolute make sure you don't actually
-# fly with real values for certain things:
-if len(sys.argv) > 1 and sys.argv[1] == 'test':
-    # We're in the middle of a django test run
-    LDAP_SERVER_URI = 'ldap://example.com'
-    LDAP_BIND_DN = 'cosmo'
-    LDAP_BIND_PASSWORD = 'kramer'
