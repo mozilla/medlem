@@ -1,0 +1,9 @@
+{
+  "name": "medlem",
+  "description": "Keeping track of LDAP memberships",
+  "repository": {
+    "url": "https://github.com/mozilla/medlem/",
+    "license": "MPL 2.0",
+    "tests": "https://travis-ci.org/mozilla/medlem/"
+  }
+}
