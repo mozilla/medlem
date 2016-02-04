@@ -17,7 +17,7 @@ Two core feature areas:
    For example "Is example@example.org still an employee of Example inc?"
 
 2) If changes to membership happens, notify, by HTTP POST those who are
-concerned to know this. 
+concerned to know this.
 
 About the name
 --------------

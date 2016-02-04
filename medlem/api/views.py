@@ -1,7 +1,6 @@
 import ldap
 from ldap.filter import filter_format, escape_filter_chars
 
-from django import http
 from django.conf import settings
 
 from jsonview.decorators import json_view
@@ -14,12 +13,9 @@ def required_parameters(*names):
             for name in names:
                 value = request.GET.get(name, '').strip()
                 if not value:
-                    # return {
-                    #     'error': "missing key '{}'".format(name)
-                    # }, 400
-                    return http.HttpResponseBadRequest(
-                        "missing key '{}'".format(name)
-                    )
+                    return {
+                        'error': "missing key '{}'".format(name)
+                    }, 400
                 assert value
                 values.append(value)
             return func(request, *values)
