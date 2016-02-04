@@ -17,6 +17,13 @@ class TestAPI(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
 
+        # check that 400 Bad Request errors are proper JSON
+        self.assertEqual(response['Content-Type'], 'application/json')
+        self.assertEqual(
+            json.loads(response.content),
+            {'error': "missing key 'mail'"}
+        )
+
         response = self.client.get(url, {'mail': ''})
         self.assertEqual(response.status_code, 400)
 
@@ -35,7 +42,7 @@ class TestAPI(TestCase):
 
         response = self.client.get(url, {'mail': 'peter@example.com'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertEqual(response['Content-Type'], 'application/json')
         self.assertEqual(json.loads(response.content), True)
 
         response = self.client.get(url, {'mail': 'never@heard.of.com'})
@@ -79,12 +86,12 @@ class TestAPI(TestCase):
 
         response = self.client.get(url, {'mail': 'peter@example.com'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertEqual(response['Content-Type'], 'application/json')
         self.assertEqual(json.loads(response.content), True)
 
         response = self.client.get(url, {'mail': 'never@heard.of.com'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertEqual(response['Content-Type'], 'application/json')
         self.assertEqual(json.loads(response.content), False)
 
     @mock.patch('ldap.initialize')
